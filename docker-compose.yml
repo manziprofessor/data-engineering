@@ -1,25 +1,26 @@
-version: "3.7"
+version: '3.8'
 
 services:
-  database:
-    image: postgres
-    volumes:
-      - ./example_schema.sql:/docker-entrypoint-initdb.d/example_schema.sql
+  db:
+    image: postgres:13
     environment:
-      - POSTGRES_DB=codetest
-      - POSTGRES_USER=codetest
-      - POSTGRES_PASSWORD=password
-    healthcheck:
-      test: pg_isready -U codetest
-      interval: 5s
-      timeout: 1s
-      retries: 3
+      POSTGRES_DB: customer_db
+      POSTGRES_USER: codetest
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - ./people_places.sql:/docker-entrypoint-initdb.d/people_places.sql
     ports:
-      - 5432:5432
+      - "5432:5432"
 
   app:
-    image: app
-    build: src
-    command: ["./main.py"]
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_DB: customer_db
+      POSTGRES_USER: codetest
+      POSTGRES_PASSWORD: pass
+    depends_on:
+      - db
     volumes:
       - ./data:/data
